@@ -108,7 +108,7 @@ function replaceTemplate(
   obj: { [templateKey: string]: string },
 ) {
   return template.replace(
-    /\{\{\s*([^\}]+)\s*\}\}/i,
+    /\{\{\s*([^\}]+)\s*\}\}/gmi,
     (_, key) => (!obj[key]) ? `{{${key}}}` : obj[key],
   );
 }
@@ -120,5 +120,5 @@ export async function copyExternalFile(
   const url = href(file);
   const data = await fetch(url);
   const content = await data.text();
-  return writeFileStr(join(destinationDirectory, file), content);
+  return writeFileStr(join(destinationDirectory, basename(file)), content);
 }
