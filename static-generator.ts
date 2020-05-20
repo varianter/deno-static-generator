@@ -148,7 +148,7 @@ async function copyAssets(outputPath: string, assetsPath?: string) {
   } else {
     assetsDestination = join(outputPath, "assets");
     await emptyDir(assetsDestination);
-    await copyExternalFile("assets/style.css", "assets/");
+    await copyExternalFile("assets/style.css", assetsDestination);
   }
 
   console.log(`[Generated] Copied assets (${assetsDestination}/)`);
