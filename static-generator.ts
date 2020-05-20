@@ -1,4 +1,4 @@
-import { basename, join, copy, emptyDir, src } from "./lib.ts";
+import { basename, join, copy, emptyDir, src, isModule } from "./lib.ts";
 export * from "./static-generator.ts";
 
 import args from "https://deno.land/x/args@2.0.0/wrapper.ts";
@@ -13,9 +13,15 @@ import {
   getAllPages,
   createIndexFile,
   createToc,
+  copyExternalFile,
 } from "./api.ts";
 
 if (import.meta.main) {
+  // const foo = await fetch("https://static-generator.variant.dev/src/assets");
+
+  // console.log(foo);
+  // Deno.exit();
+
   const parser = args
     .describe("Generate simple static site from markdown files in directory")
     .with(
@@ -131,8 +137,19 @@ export default async function generate({
   const indexPath = await createIndexFile(toc, outputPath, indexTemplate);
   console.log(`[Generated] Wrote index page (${indexPath})`);
 
-  const assets = assetsPath ?? src("assets");
-  const assetsDestination = join(outputPath, basename(assets));
-  await copy(assets, assetsDestination);
+  await copyAssets(outputPath, assetsPath);
+}
+
+async function copyAssets(outputPath: string, assetsPath?: string) {
+  let assetsDestination;
+  if (assetsPath) {
+    assetsDestination = join(outputPath, basename(assetsPath));
+    await copy(assetsPath, assetsDestination);
+  } else {
+    assetsDestination = join(outputPath, "assets");
+    await emptyDir(assetsDestination);
+    await copyExternalFile("assets/style.css", "assets/");
+  }
+
   console.log(`[Generated] Copied assets (${assetsDestination}/)`);
 }

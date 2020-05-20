@@ -5,9 +5,12 @@ import {
   Marked,
   walk,
   getFileContents,
-  getLocalFileContents,
+  getModuleFileContents,
+  href,
+  writeFileStr,
+  dirname,
 } from "./lib.ts";
-
+import { ensureDir } from "https://deno.land/std@0.51.0/fs/ensure_dir.ts";
 const decoder = new TextDecoder("utf-8");
 
 export type PageType = {
@@ -26,7 +29,7 @@ export async function createIndexFile(
 ) {
   const index = templatePath
     ? await getFileContents(templatePath)
-    : await getLocalFileContents("index.html");
+    : await getModuleFileContents("index.html");
 
   const content = replaceTemplate(index, { TOC: toc });
 
@@ -45,7 +48,7 @@ export async function* getAllPages(
 ): PageTypeList {
   const template = templatePath
     ? await getFileContents(templatePath)
-    : await getLocalFileContents("layout.html");
+    : await getModuleFileContents("layout.html");
 
   const globOpts = {
     flags: "g",
@@ -108,4 +111,14 @@ function replaceTemplate(
     /\{\{\s*([^\}]+)\s*\}\}/i,
     (_, key) => (!obj[key]) ? `{{${key}}}` : obj[key],
   );
+}
+
+export async function copyExternalFile(
+  file: string,
+  destinationDirectory: string,
+) {
+  const url = href(file);
+  const data = await fetch(url);
+  const content = await data.text();
+  return writeFileStr(join(destinationDirectory, file), content);
 }
