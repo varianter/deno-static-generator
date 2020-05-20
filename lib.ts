@@ -12,7 +12,7 @@ export const getFileContents = async (path: string) =>
 
 export const src = (name: string) => {
   console.log(new URL("../src/" + name, import.meta.url));
-  console.log(new URL("../src/" + name, import.meta.url).pathname);
+  console.log(new URL("../src/" + name, import.meta.url).href);
   return new URL("../src/" + name, import.meta.url).href;
 };
 
