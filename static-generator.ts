@@ -9,7 +9,6 @@ import {
 } from "https://deno.land/x/args@2.0.0/flag-types.ts";
 
 import {
-  writeFiles,
   getAllPages,
   createIndexFile,
   createToc,
@@ -124,8 +123,11 @@ export default async function generate({
 }: StaticSiteGeneratorOptions = {}) {
   await emptyDir(outputPath);
 
-  const pages = writeFiles(
-    getAllPages(glob, globExclude, outputPath, pageTemplate),
+  const pages = getAllPages(
+    glob,
+    globExclude,
+    outputPath,
+    pageTemplate,
   );
   let files = [];
   for await (let file of pages) {

@@ -11,6 +11,7 @@ import {
   dirname,
 } from "./lib.ts";
 import { ensureDir } from "https://deno.land/std@0.51.0/fs/ensure_dir.ts";
+import { relative } from "https://deno.land/std@0.51.0/path/mod.ts";
 const decoder = new TextDecoder("utf-8");
 
 export type PageType = {
@@ -49,6 +50,7 @@ export async function* getAllPages(
   const template = templatePath
     ? await getFileContents(templatePath)
     : await getModuleFileContents("layout.html");
+  const encoder = new TextEncoder();
 
   const globOpts = {
     flags: "g",
@@ -67,23 +69,16 @@ export async function* getAllPages(
     const filename = baseFilename + ".html";
     const path = join(outputPath, filename);
     const title = getFirstTitle(parsed, baseFilename);
+    const result = replaceTemplate(template, { BODY: parsed, TITLE: title });
+
+    await Deno.writeFile(path, encoder.encode(result));
 
     yield {
       filename,
       path,
-      content: replaceTemplate(template, { BODY: parsed, TITLE: title }),
+      content: result,
       title,
     };
-  }
-}
-
-export async function* writeFiles(
-  pages: PageTypeList,
-): PageTypeList {
-  const encoder = new TextEncoder();
-  for await (let page of pages) {
-    await Deno.writeFile(page.path, encoder.encode(page.content));
-    yield page;
   }
 }
 
@@ -93,7 +88,7 @@ export async function createToc(
   let toc = "";
   for await (let page of pages) {
     toc +=
-      `<li><a href="${page.path}" title="${page.filename}">${page.title}</a></li>`;
+      `<li><a href="./${page.filename}" title="${page.filename}">${page.title}</a></li>`;
   }
   return `<ul>${toc}</ul>`;
 }
