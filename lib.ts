@@ -11,9 +11,7 @@ export const getFileContents = async (path: string) =>
   decoder.decode(await Deno.readFile(path));
 
 export const src = (name: string) => {
-  console.log(new URL("../src/" + name, import.meta.url));
-  console.log(new URL("../src/" + name, import.meta.url).href);
-  return new URL("../src/" + name, import.meta.url).href;
+  return new URL("../src/" + name, import.meta.url).pathname;
 };
 
 export const getLocalFileContents = async (name: string) =>
