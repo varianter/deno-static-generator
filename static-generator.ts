@@ -1,4 +1,4 @@
-import { basename, join, copy, emptyDir, src, isModule } from "./lib.ts";
+import { basename, join, copy, emptyDir } from "./lib.ts";
 export * from "./static-generator.ts";
 
 import args from "https://deno.land/x/args@2.0.0/wrapper.ts";
@@ -16,11 +16,6 @@ import {
 } from "./api.ts";
 
 if (import.meta.main) {
-  // const foo = await fetch("https://static-generator.variant.dev/src/assets");
-
-  // console.log(foo);
-  // Deno.exit();
-
   const parser = args
     .describe("Generate simple static site from markdown files in directory")
     .with(
@@ -30,7 +25,7 @@ if (import.meta.main) {
           console.log(parser.help());
           return Deno.exit();
         },
-      }),
+      })
     )
     .with(
       PartialOption("output", {
@@ -38,7 +33,7 @@ if (import.meta.main) {
         type: Text,
         describe: "Output directory",
         default: undefined,
-      }),
+      })
     )
     .with(
       PartialOption("index", {
@@ -47,7 +42,7 @@ if (import.meta.main) {
         describe:
           "Index template path (should include tag {{TOC}}, defaults to included index template)",
         default: undefined,
-      }),
+      })
     )
     .with(
       PartialOption("template", {
@@ -56,7 +51,7 @@ if (import.meta.main) {
         describe:
           "Page template path  (should include tag {{BODY}}, defaults to included template)",
         default: undefined,
-      }),
+      })
     )
     .with(
       PartialOption("assets", {
@@ -64,7 +59,7 @@ if (import.meta.main) {
         type: Text,
         describe: "Assets directory (defaults to included assets) ",
         default: undefined,
-      }),
+      })
     )
     .with(
       PartialOption("files", {
@@ -73,7 +68,7 @@ if (import.meta.main) {
         describe:
           "Files to look for as glob. Example `pages/*.md` (defaults to all markdowns except ignored ones) ",
         default: undefined,
-      }),
+      })
     )
     .with(
       PartialOption("ignore", {
@@ -82,7 +77,7 @@ if (import.meta.main) {
         describe:
           "Ignored files as glob. Example `*.doc.md` (defaults to README.md and LICENSE.md at any level) ",
         default: undefined,
-      }),
+      })
     );
 
   const res = parser.parse(Deno.args);
@@ -123,12 +118,7 @@ export default async function generate({
 }: StaticSiteGeneratorOptions = {}) {
   await emptyDir(outputPath);
 
-  const pages = getAllPages(
-    glob,
-    globExclude,
-    outputPath,
-    pageTemplate,
-  );
+  const pages = getAllPages(glob, globExclude, outputPath, pageTemplate);
   let files = [];
   for await (let file of pages) {
     console.log(`[Generated] Wrote ${file.title} (${file.path})`);

@@ -10,8 +10,6 @@ import {
   writeFileStr,
   dirname,
 } from "./lib.ts";
-import { ensureDir } from "https://deno.land/std@0.51.0/fs/ensure_dir.ts";
-import { relative } from "https://deno.land/std@0.51.0/path/mod.ts";
 const decoder = new TextDecoder("utf-8");
 
 export type PageType = {
@@ -26,7 +24,7 @@ type PageTypeList = AsyncGenerator<PageType> | PageType[];
 export async function createIndexFile(
   toc: string,
   outputPath: string,
-  templatePath?: string,
+  templatePath?: string
 ) {
   const index = templatePath
     ? await getFileContents(templatePath)
@@ -45,7 +43,7 @@ export async function* getAllPages(
   glob: string,
   globExclude: string,
   outputPath: string,
-  templatePath?: string,
+  templatePath?: string
 ): PageTypeList {
   const template = templatePath
     ? await getFileContents(templatePath)
@@ -57,12 +55,10 @@ export async function* getAllPages(
     extended: true,
     globstar: true,
   };
-  for await (
-    let file of walk(Deno.cwd(), {
-      match: [globToRegExp(glob, globOpts)],
-      skip: [globToRegExp(globExclude, globOpts)],
-    })
-  ) {
+  for await (let file of walk(Deno.cwd(), {
+    match: [globToRegExp(glob, globOpts)],
+    skip: [globToRegExp(globExclude, globOpts)],
+  })) {
     const content = decoder.decode(await Deno.readFile(file.path));
     const parsed = Marked.parse(content);
     const baseFilename = basename(file.name, ".md");
@@ -82,13 +78,10 @@ export async function* getAllPages(
   }
 }
 
-export async function createToc(
-  pages: PageTypeList,
-) {
+export async function createToc(pages: PageTypeList) {
   let toc = "";
   for await (let page of pages) {
-    toc +=
-      `<li><a href="./${page.filename}" title="${page.filename}">${page.title}</a></li>`;
+    toc += `<li><a href="./${page.filename}" title="${page.filename}">${page.title}</a></li>`;
   }
   return `<ul>${toc}</ul>`;
 }
@@ -100,17 +93,16 @@ function getFirstTitle(content: string, filename: string) {
 
 function replaceTemplate(
   template: string,
-  obj: { [templateKey: string]: string },
+  obj: { [templateKey: string]: string }
 ) {
-  return template.replace(
-    /\{\{\s*([^\}]+)\s*\}\}/gmi,
-    (_, key) => (!obj[key]) ? `{{${key}}}` : obj[key],
+  return template.replace(/\{\{\s*([^\}]+)\s*\}\}/gim, (_, key) =>
+    !obj[key] ? `{{${key}}}` : obj[key]
   );
 }
 
 export async function copyExternalFile(
   file: string,
-  destinationDirectory: string,
+  destinationDirectory: string
 ) {
   const url = href(file);
   const data = await fetch(url);
