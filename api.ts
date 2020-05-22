@@ -8,7 +8,6 @@ import {
   getModuleFileContents,
   href,
   writeFileStr,
-  dirname,
 } from "./lib.ts";
 const decoder = new TextDecoder("utf-8");
 

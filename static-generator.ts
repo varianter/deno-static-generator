@@ -1,5 +1,5 @@
-import { basename, join, copy, emptyDir } from "./lib.ts";
-export * from "./static-generator.ts";
+import { basename, join, copy, emptyDir, isModule, src } from "./lib.ts";
+export * from "./api.ts";
 
 import args from "https://deno.land/x/args@2.0.0/wrapper.ts";
 import { Text } from "https://deno.land/x/args@2.0.0/value-types.ts";
@@ -134,9 +134,10 @@ export default async function generate({
 
 async function copyAssets(outputPath: string, assetsPath?: string) {
   let assetsDestination;
-  if (assetsPath) {
-    assetsDestination = join(outputPath, basename(assetsPath));
-    await copy(assetsPath, assetsDestination);
+  if (assetsPath || !isModule) {
+    const path = assetsPath ?? src("assets/");
+    assetsDestination = join(outputPath, basename(path));
+    await copy(path, assetsDestination);
   } else {
     assetsDestination = join(outputPath, "assets");
     await emptyDir(assetsDestination);
