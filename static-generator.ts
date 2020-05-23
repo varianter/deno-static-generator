@@ -54,10 +54,10 @@ if (import.meta.main) {
       })
     )
     .with(
-      PartialOption("assets", {
-        alias: ["a"],
+      PartialOption("public", {
+        alias: ["p"],
         type: Text,
-        describe: "Assets directory (defaults to included assets) ",
+        describe: "Public directory (defaults to included style.css) ",
         default: undefined,
       })
     )
@@ -92,7 +92,7 @@ if (import.meta.main) {
       indexTemplate: res.value?.index,
       pageTemplate: res.value?.template,
       outputPath: res.value?.output,
-      assetsPath: res.value?.assets,
+      publicPath: res.value?.public,
       glob: res.value?.files,
       globExclude: res.value?.ignore,
     });
@@ -105,13 +105,13 @@ type StaticSiteGeneratorOptions = {
   indexTemplate?: string;
   pageTemplate?: string;
   outputPath?: string;
-  assetsPath?: string;
+  publicPath?: string;
 };
 
 export default async function generate({
   indexTemplate,
   pageTemplate,
-  assetsPath,
+  publicPath: publicPath,
   glob = join("**", "*.md"),
   globExclude = join("**", "{README,LICENSE}.md"),
   outputPath = "docs",
@@ -129,20 +129,22 @@ export default async function generate({
   const indexPath = await createIndexFile(toc, outputPath, indexTemplate);
   console.log(`[Generated] Wrote index page (${indexPath})`);
 
-  await copyAssets(outputPath, assetsPath);
+  await copyPublic(outputPath, publicPath);
 }
 
-async function copyAssets(outputPath: string, assetsPath?: string) {
-  let assetsDestination;
-  if (assetsPath || !isModule) {
-    const path = assetsPath ?? src("assets/");
-    assetsDestination = join(outputPath, basename(path));
-    await copy(path, assetsDestination);
+async function copyPublic(outputPath: string, publicPath?: string) {
+  if (publicPath || !isModule) {
+    const path = publicPath ?? src("public/");
+
+    for await (let file of Deno.readDir(path)) {
+      const assetsDestination = join(outputPath, basename(file.name));
+      await copy(join(path, file.name), assetsDestination);
+      console.log(`[Generated] Copied public (${assetsDestination})`);
+    }
   } else {
-    assetsDestination = join(outputPath, "assets");
+    const assetsDestination = join(outputPath, "assets");
     await emptyDir(assetsDestination);
     await copyExternalFile("assets/style.css", assetsDestination);
+    console.log(`[Generated] Copied public (${assetsDestination}/)`);
   }
-
-  console.log(`[Generated] Copied assets (${assetsDestination}/)`);
 }

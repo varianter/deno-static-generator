@@ -27,7 +27,6 @@ export const isModule = !import.meta.url.startsWith("file://");
 
 export async function getModuleFileContents(name: string) {
   if (!isModule) {
-    console.log(src(name), name);
     return decoder.decode(await Deno.readFile(src(name)));
   } else {
     const url = href(name);
